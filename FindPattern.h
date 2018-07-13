@@ -5,6 +5,11 @@
 #include <cstring>
 #include <psapi.h>
 
+/**
+ * Author: Igromanru
+ * Credits: KN4CK3R, SilverDeath, Dr.Pepper
+ * Date: 7.07.2018
+ */
 namespace IgroWidgets
 {	
 	size_t FindPatternDump(const unsigned char * dump, const size_t length, const unsigned char* pattern, const char* mask, size_t & outOffset)
