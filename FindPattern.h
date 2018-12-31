@@ -113,6 +113,11 @@ namespace IgroWidgets
 		return result;
 	}
 
+	inline uintptr_t FindPattern(const HMODULE moduleHandle, const unsigned char * pattern, const char * mask)
+	{
+		return FindPattern(GetCurrentProcess(), moduleHandle, pattern, mask);
+	}
+
 	inline uintptr_t ReadRIPAddress(const HANDLE processHanlde, const uintptr_t address, const uint32_t firstOffset, const uint32_t secondOffset)
 	{
 		uintptr_t result = 0;
