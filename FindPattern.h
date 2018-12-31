@@ -12,11 +12,10 @@
  */
 namespace IgroWidgets
 {	
-	size_t FindPatternDump(const unsigned char * dump, const size_t length, const unsigned char* pattern, const char* mask, size_t & outOffset)
-	{
-		size_t patternPos = 0;
+	inline size_t FindPatternDump(const unsigned char * dump, const size_t length, const unsigned char * pattern, const char * mask, size_t & outOffset)
+	{		
 		const size_t maskLength = std::strlen(mask) - 1;
-
+		size_t patternPos = 0;
 		size_t tmpOffset = -1;
 		for (size_t offset = 0; offset < length - 1; ++offset)
 		{
@@ -47,9 +46,9 @@ namespace IgroWidgets
 		return false;
 	}
 
-	uintptr_t FindPatternExternal(const HANDLE processHanlde, const HMODULE moduleHandle, const unsigned char* pattern, const char* mask)
+	inline uintptr_t FindPatternExternal(const HANDLE processHanlde, const HMODULE moduleHandle, const unsigned char * pattern, const char * mask)
 	{
-		uintptr_t result;
+		uintptr_t result = 0;
 		MODULEINFO info = { };
 		const auto moduleAddress = reinterpret_cast<uintptr_t>(moduleHandle);
 		if(GetModuleInformation(processHanlde, moduleHandle, &info, sizeof(MODULEINFO)))
@@ -58,7 +57,7 @@ namespace IgroWidgets
 			if(ReadProcessMemory(processHanlde, moduleHandle, buffer, info.SizeOfImage, nullptr) != 0)
 			{
 				size_t offset;
-				if(IgroWidgets::FindPatternDump(buffer, info.SizeOfImage, pattern, mask, offset))
+				if(FindPatternDump(buffer, info.SizeOfImage, pattern, mask, offset))
 				{
 					result = moduleAddress + offset;
 				}
@@ -68,7 +67,7 @@ namespace IgroWidgets
 		return result;
 	}
 
-	uintptr_t FindPattern(const uintptr_t start, const size_t length, const unsigned char* pattern, const char* mask)
+	inline uintptr_t FindPattern(const uintptr_t start, const size_t length, const unsigned char * pattern, const char * mask)
 	{
 		size_t pos = 0;
 		const auto maskLength = std::strlen(mask) - 1;
@@ -103,36 +102,36 @@ namespace IgroWidgets
 		return 0;
 	}
 
-	uintptr_t FindPattern(const HANDLE processHanlde, const HMODULE moduleHandle, const unsigned char* pattern, const char* mask)
+	inline uintptr_t FindPattern(const HANDLE processHanlde, const HMODULE moduleHandle, const unsigned char* pattern, const char* mask)
 	{
 		uintptr_t result;
 		MODULEINFO info = { };			
 		if(GetModuleInformation(processHanlde, moduleHandle, &info, sizeof(MODULEINFO)))
 		{
-			result = IgroWidgets::FindPattern(reinterpret_cast<uintptr_t>(moduleHandle), info.SizeOfImage, pattern, mask);
+			result = FindPattern(reinterpret_cast<uintptr_t>(moduleHandle), info.SizeOfImage, pattern, mask);
 		}
 		return result;
 	}
 
-	uintptr_t ReadRIPAddress(const HANDLE processHanlde, const uintptr_t address, const uint32_t firstOffset, const uint32_t secondOffset)
+	inline uintptr_t ReadRIPAddress(const HANDLE processHanlde, const uintptr_t address, const uint32_t firstOffset, const uint32_t secondOffset)
 	{
-		uintptr_t result;
+		uintptr_t result = 0;
 		uint32_t offset;
-		if(ReadProcessMemory(processHanlde, (LPCVOID)(address + firstOffset), &offset, sizeof(uint32_t), nullptr) != 0)
+		if(ReadProcessMemory(processHanlde, reinterpret_cast<LPCVOID>(address + firstOffset), &offset, sizeof(uint32_t), nullptr) != 0)
 		{
 			result = address + offset + secondOffset;
 		}
 		return result;
 	}
 
-	uintptr_t ReadRIPAddressPtr(const HANDLE processHanlde, const uintptr_t address, const uint32_t firstOffset, const uint32_t secondOffset)
+	inline uintptr_t ReadRIPAddressPtr(const HANDLE processHanlde, const uintptr_t address, const uint32_t firstOffset, const uint32_t secondOffset)
 	{
-		uintptr_t result;
+		uintptr_t result = 0;
 		uint32_t offset;
-		if(ReadProcessMemory(processHanlde, (LPCVOID)(address + firstOffset), &offset, sizeof(uint32_t), nullptr) != 0)
+		if(ReadProcessMemory(processHanlde, reinterpret_cast<LPCVOID>(address + firstOffset), &offset, sizeof(uint32_t), nullptr) != 0)
 		{
 			uintptr_t tmpResult;
-			if(ReadProcessMemory(processHanlde, (LPCVOID)(address + offset + secondOffset), &tmpResult, sizeof(uintptr_t), nullptr) != 0)
+			if(ReadProcessMemory(processHanlde, reinterpret_cast<LPCVOID>(address + offset + secondOffset), &tmpResult, sizeof(uintptr_t), nullptr) != 0)
 			{
 				result = tmpResult;
 			}
