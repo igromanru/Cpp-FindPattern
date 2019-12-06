@@ -26,7 +26,7 @@ namespace IgroWidgets
 					outOffset = (offset - maskLength);
 					return true;
 				}
-				if(tmpOffset == -1)
+				if(tmpOffset == static_cast<size_t>(-1))
 				{
 					tmpOffset = offset;
 				}
@@ -34,10 +34,10 @@ namespace IgroWidgets
 			}
 			else
 			{
-				if(tmpOffset > -1)
+				if(tmpOffset > static_cast<size_t>(-1))
 				{
 					offset = tmpOffset;
-					tmpOffset = -1;
+					tmpOffset = static_cast<size_t>(-1);
 				}
 				patternPos = 0;
 			}
@@ -46,14 +46,14 @@ namespace IgroWidgets
 		return false;
 	}
 
-	inline uintptr_t FindPatternExternal(const HANDLE processHanlde, const HMODULE moduleHandle, const unsigned char * pattern, const char * mask)
+	inline uintptr_t FindPatternExternal(HANDLE processHanlde, HMODULE moduleHandle, const unsigned char * pattern, const char * mask)
 	{
 		uintptr_t result = 0;
 		MODULEINFO info = { };
 		const auto moduleAddress = reinterpret_cast<uintptr_t>(moduleHandle);
 		if(GetModuleInformation(processHanlde, moduleHandle, &info, sizeof(MODULEINFO)))
 		{
-			unsigned char* buffer = new unsigned char[info.SizeOfImage];
+			auto buffer = new unsigned char[info.SizeOfImage];
 			if(ReadProcessMemory(processHanlde, moduleHandle, buffer, info.SizeOfImage, nullptr) != 0)
 			{
 				size_t offset;
@@ -118,7 +118,7 @@ namespace IgroWidgets
 		return FindPattern(GetCurrentProcess(), moduleHandle, pattern, mask);
 	}
 
-	inline uintptr_t ReadRIPAddress(const HANDLE processHanlde, const uintptr_t address, const uint32_t firstOffset, const uint32_t secondOffset)
+	inline uintptr_t ReadRIPAddress(HANDLE processHanlde, const uintptr_t address, const uint32_t firstOffset, const uint32_t secondOffset)
 	{
 		uintptr_t result = 0;
 		uint32_t offset;
@@ -129,7 +129,7 @@ namespace IgroWidgets
 		return result;
 	}
 
-	inline uintptr_t ReadRIPAddressPtr(const HANDLE processHanlde, const uintptr_t address, const uint32_t firstOffset, const uint32_t secondOffset)
+	inline uintptr_t ReadRIPAddressPtr(HANDLE processHanlde, const uintptr_t address, const uint32_t firstOffset, const uint32_t secondOffset)
 	{
 		uintptr_t result = 0;
 		uint32_t offset;
