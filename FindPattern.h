@@ -49,7 +49,8 @@ namespace IgroWidgets
 	inline uintptr_t FindPatternExternal(HANDLE processHanlde, HMODULE moduleHandle, const unsigned char * pattern, const char * mask)
 	{
 		uintptr_t result = 0;
-		MODULEINFO info = { };
+		MODULEINFO info;
+		SecureZeroMemory(&info, sizeof(info));
 		const auto moduleAddress = reinterpret_cast<uintptr_t>(moduleHandle);
 		if(GetModuleInformation(processHanlde, moduleHandle, &info, sizeof(MODULEINFO)))
 		{
@@ -104,8 +105,9 @@ namespace IgroWidgets
 
 	inline uintptr_t FindPattern(const HANDLE processHanlde, const HMODULE moduleHandle, const unsigned char* pattern, const char* mask)
 	{
-		uintptr_t result;
-		MODULEINFO info = { };			
+		uintptr_t result = 0;
+		MODULEINFO info;
+		SecureZeroMemory(&info, sizeof(info));
 		if(GetModuleInformation(processHanlde, moduleHandle, &info, sizeof(MODULEINFO)))
 		{
 			result = FindPattern(reinterpret_cast<uintptr_t>(moduleHandle), info.SizeOfImage, pattern, mask);
