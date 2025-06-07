@@ -46,6 +46,23 @@ namespace IgroWidgets
         return false;
     }
 
+    inline uintptr_t FindPatternExternal(HANDLE processHanlde, uintptr_t address, size_t searchLength, const unsigned char* pattern, const char* mask)
+    {
+        uintptr_t result = 0;
+        auto buffer = new unsigned char[searchLength];
+        size_t readSize;
+        if (ReadProcessMemory(processHanlde, (LPVOID)address, buffer, searchLength, &readSize) && searchLength == readSize)
+        {
+            size_t offset;
+            if (FindPatternDump(buffer, searchLength, pattern, mask, offset))
+            {
+                result = address + offset;
+            }
+        }
+        delete[] buffer;
+        return result;
+    }
+
     inline uintptr_t FindPatternExternal(HANDLE processHanlde, HMODULE moduleHandle, const unsigned char* pattern, const char* mask)
     {
         uintptr_t result = 0;
@@ -54,19 +71,11 @@ namespace IgroWidgets
         const auto moduleAddress = reinterpret_cast<uintptr_t>(moduleHandle);
         if (GetModuleInformation(processHanlde, moduleHandle, &info, sizeof(MODULEINFO)))
         {
-            auto buffer = new unsigned char[info.SizeOfImage];
-            if (ReadProcessMemory(processHanlde, moduleHandle, buffer, info.SizeOfImage, nullptr) != 0)
-            {
-                size_t offset;
-                if (FindPatternDump(buffer, info.SizeOfImage, pattern, mask, offset))
-                {
-                    result = moduleAddress + offset;
-                }
-            }
-            delete[] buffer;
+            return FindPatternExternal(processHanlde, moduleAddress, info.SizeOfImage, pattern, mask);
         }
         return result;
     }
+
 
     inline bool MatchPattern(const uintptr_t start, const unsigned char* pattern, const char* mask)
     {
@@ -121,14 +130,14 @@ namespace IgroWidgets
         return result;
     }
 
-    inline uintptr_t ReadRIPAddressPtr(HANDLE processHanlde, const uintptr_t address, const uint32_t firstOffset, const uint32_t secondOffset)
+    inline uintptr_t ReadRIPAddressPtr(HANDLE processHanlde, const uintptr_t address, const uint32_t offsetOffset, const uint32_t instructionLength)
     {
         uintptr_t result = 0;
         uint32_t offset;
-        if (ReadProcessMemory(processHanlde, reinterpret_cast<LPCVOID>(address + firstOffset), &offset, sizeof(uint32_t), nullptr) != 0)
+        if (ReadProcessMemory(processHanlde, reinterpret_cast<LPCVOID>(address + offsetOffset), &offset, sizeof(uint32_t), nullptr) != 0)
         {
             uintptr_t tmpResult;
-            if (ReadProcessMemory(processHanlde, reinterpret_cast<LPCVOID>(address + offset + secondOffset), &tmpResult, sizeof(uintptr_t), nullptr) != 0)
+            if (ReadProcessMemory(processHanlde, reinterpret_cast<LPCVOID>(address + instructionLength + offset), &tmpResult, sizeof(uintptr_t), nullptr) != 0)
             {
                 result = tmpResult;
             }
