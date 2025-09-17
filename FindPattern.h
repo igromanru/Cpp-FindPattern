@@ -34,7 +34,7 @@ namespace IgroWidgets
             }
             else
             {
-                if (tmpOffset > static_cast<size_t>(-1))
+                if (tmpOffset != static_cast<size_t>(-1))
                 {
                     offset = tmpOffset;
                     tmpOffset = static_cast<size_t>(-1);
