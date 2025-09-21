@@ -12,41 +12,39 @@
  */
 namespace IgroWidgets
 {
-    inline size_t FindPatternDump(const unsigned char* dump, const size_t length, const unsigned char* pattern, const char* mask, size_t& outOffset)
+    inline bool FindPatternDump(const unsigned char* dump, const size_t length, const unsigned char* pattern, const char* mask, size_t &outOffset, int getXResult = 1)
     {
-        const size_t maskLength = std::strlen(mask) - 1;
-        size_t patternPos = 0;
-        size_t tmpOffset = -1;
-        for (size_t offset = 0; offset < length - 1; ++offset)
+        const size_t maskLength = std::strlen(mask);
+        auto resultCount = 0;
+
+        for (size_t offset = 0; offset <= length - maskLength; ++offset)
         {
-            if (dump[offset] == pattern[patternPos] || mask[patternPos] == '?')
+            bool match = true;
+            for (size_t patternPos = 0; patternPos < maskLength; ++patternPos)
             {
-                if (mask[patternPos + 1] == '\0')
+                if (mask[patternPos] != '?' && dump[offset + patternPos] != pattern[patternPos])
                 {
-                    outOffset = (offset - maskLength);
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match)
+            {
+                resultCount++;
+                if (resultCount == getXResult)
+                {
+                    outOffset = offset;
                     return true;
                 }
-                if (tmpOffset == static_cast<size_t>(-1))
-                {
-                    tmpOffset = offset;
-                }
-                patternPos++;
-            }
-            else
-            {
-                if (tmpOffset != static_cast<size_t>(-1))
-                {
-                    offset = tmpOffset;
-                    tmpOffset = static_cast<size_t>(-1);
-                }
-                patternPos = 0;
             }
         }
 
+        outOffset = 0;
         return false;
     }
 
-    inline uintptr_t FindPatternExternal(HANDLE processHanlde, uintptr_t address, size_t searchLength, const unsigned char* pattern, const char* mask)
+    inline uintptr_t FindPatternExternal(HANDLE processHanlde, uintptr_t address, size_t searchLength, const unsigned char *pattern, const char *mask)
     {
         uintptr_t result = 0;
         auto buffer = new unsigned char[searchLength];
@@ -63,7 +61,7 @@ namespace IgroWidgets
         return result;
     }
 
-    inline uintptr_t FindPatternExternal(HANDLE processHanlde, HMODULE moduleHandle, const unsigned char* pattern, const char* mask)
+    inline uintptr_t FindPatternExternal(HANDLE processHanlde, HMODULE moduleHandle, const unsigned char *pattern, const char *mask)
     {
         uintptr_t result = 0;
         MODULEINFO info;
@@ -76,12 +74,11 @@ namespace IgroWidgets
         return result;
     }
 
-
-    inline bool MatchPattern(const uintptr_t start, const unsigned char* pattern, const char* mask)
+    inline bool MatchPattern(const uintptr_t start, const unsigned char *pattern, const char *mask)
     {
         for (size_t i = 0; mask[i]; i++)
         {
-            if (mask[i] != '?' && reinterpret_cast<const unsigned char*>(start)[i] != pattern[i])
+            if (mask[i] != '?' && reinterpret_cast<const unsigned char *>(start)[i] != pattern[i])
             {
                 return false;
             }
@@ -90,19 +87,20 @@ namespace IgroWidgets
         return true;
     }
 
-    inline uintptr_t FindPattern(const uintptr_t start, const size_t length, const unsigned char* pattern, const char* mask)
+    inline uintptr_t FindPattern(const uintptr_t start, const size_t length, const unsigned char *pattern, const char *mask)
     {
         const auto last = start + length - std::strlen(mask);
 
         for (auto it = start; it <= last; ++it)
         {
-            if (MatchPattern(it, pattern, mask)) return it;
+            if (MatchPattern(it, pattern, mask))
+                return it;
         }
 
         return 0;
     }
 
-    inline uintptr_t FindPattern(const HANDLE processHanlde, const HMODULE moduleHandle, const unsigned char* pattern, const char* mask)
+    inline uintptr_t FindPattern(const HANDLE processHanlde, const HMODULE moduleHandle, const unsigned char *pattern, const char *mask)
     {
         uintptr_t result = 0;
         MODULEINFO info;
@@ -114,7 +112,7 @@ namespace IgroWidgets
         return result;
     }
 
-    inline uintptr_t FindPattern(const HMODULE moduleHandle, const unsigned char* pattern, const char* mask)
+    inline uintptr_t FindPattern(const HMODULE moduleHandle, const unsigned char *pattern, const char *mask)
     {
         return FindPattern(GetCurrentProcess(), moduleHandle, pattern, mask);
     }
@@ -145,5 +143,3 @@ namespace IgroWidgets
         return result;
     }
 }
-
-
